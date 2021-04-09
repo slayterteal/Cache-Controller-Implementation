@@ -39,7 +39,166 @@ module CacheControl(input Strobe,
    assign WSCLoadVal = 8'h4;   
    wait_state WaitStateCtr (LdCtr, WSCLoadVal, CtrSig, clk);
 
-   // Insert FSM Here
+   // FSM Logic
+   // check the reset, go to idle if high, 
+   // else move on to the next stage
+   always @(posedge clk)
+     begin
+         if (reset == 1'b1)	
+            CURRENT_STATE <=  Idle;
+         else
+            CURRENT_STATE <=  NEXT_STATE;
+     end
+   
+   /*
+      OutputLogic:
+      10000000 - Reset
+      10000000//
+      10000000//
+      11000000
+      11000000
+      11000000
+      11000000
+      10001000
+      00000000
+      00000000
+      00110110
+      10000000
+      10000000
+      10000000
+      10000000
+      10001100
+      10001100
+      00000100
+      00000100
+      00110101
+   */
+
+   always @(CURRENT_STATE or CtrSig)
+   begin
+      case(CURRENT_STATE)
+         Idle:	
+            if (Strobe == 1'b0) // idle
+               begin
+                  OutputLogic = 8'b10000000;
+                  NEXT_STATE <=  Idle;
+               end 
+            else if (Strobe == 1'b1 && DRW == 1'b1) // write
+               begin
+                  OutputLogic = 8'b10000000;
+                  NEXT_STATE <=  Write;
+               end
+            else // read
+               begin
+                  OutputLogic = 8'b10000000;
+                  NEXT_STATE <=  Read;
+               end
+
+         Read:	
+            if (M == 1'b0 && V == 1'b0)
+               begin
+                  OutputLogic = 8'b11000000;
+                  NEXT_STATE <=  ReadMiss;
+               end 
+            else if ( M == 1'b0 && V == 1'b1)
+               begin
+                  OutputLogic = 8'b11000000;
+                  NEXT_STATE <=  ReadMiss;
+               end
+            else if ( M == 1'b1 && V == 1'b0)
+               begin
+                  OutputLogic = 8'b11000000;
+                  NEXT_STATE <=  ReadMiss;
+               end
+            else
+               begin
+                  OutputLogic = 8'b00110110;
+                  NEXT_STATE <= Idle;
+               end		
+
+         ReadMiss:	
+            if (CtrSig == 1'bx)
+               begin
+                  OutputLogic = 8'b10001000;
+                  NEXT_STATE <=  ReadMem;
+               end 
+            else if ( CtrSig == 1'b1)
+               begin
+                  OutputLogic = 8'b00000000;
+                  NEXT_STATE <=  ReadData;
+               end
+            else 
+               begin
+                  OutputLogic = 8'b00000000;
+                  NEXT_STATE <=  ReadMem;
+               end	
+
+         ReadData:	
+            begin
+               OutputLogic = 8'b00110110;
+               NEXT_STATE = Idle;
+            end	
+
+         Write:	
+            if (M == 1'b0 && V == 1'b0)
+               begin
+                  OutputLogic = 8'b10000000;
+                  NEXT_STATE <=  WriteMiss;
+               end 
+            else if ( M == 1'b0 && V == 1'b1)
+               begin
+                  OutputLogic = 8'b10000000;
+                  NEXT_STATE <=  WriteMiss;
+               end
+            else if ( M == 1'b0 && V == 1'b1)
+               begin
+                  OutputLogic = 8'b10000000;
+                  NEXT_STATE <=  WriteMiss;
+               end
+            else 
+               begin
+                  OutputLogic = 8'b10000000;
+                  NEXT_STATE <=  WriteHit;
+               end	
+
+         WriteMiss:	
+            begin
+               OutputLogic = 8'b10001100;
+               NEXT_STATE <= WriteMem;
+            end
+
+         WriteHit:	
+            begin
+               OutputLogic = 8'b10001100;
+               NEXT_STATE <= WriteMem;
+            end	
+
+         WriteMem:	
+            if (CtrSig == 1'b1)
+               begin
+                  OutputLogic = 8'b00000100;
+                  NEXT_STATE <=  WriteData;
+               end 
+            else 
+               begin
+                  OutputLogic = 8'b00000100;
+                  NEXT_STATE <=  WriteMem;
+               end
+         
+         WriteData:	
+            begin
+               OutputLogic = 00110101;
+               NEXT_STATE <= 00110101;
+            end
+      
+         default: 
+            begin
+               NEXT_STATE <=  Idle;
+               OutputLogic = 8'b10000000;	     
+            end
+	  
+	   endcase // case (CURRENT_STATE)	
+   end // always @ (CURRENT_STATE or X)   
 
 
 endmodule /* Control */
