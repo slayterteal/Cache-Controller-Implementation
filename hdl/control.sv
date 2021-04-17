@@ -74,7 +74,7 @@ module CacheControl(input Strobe,
       00110101
    */
 
-   always @(CURRENT_STATE or CtrSig)
+   always @(CtrSig or Strobe or M or V or DRW or CURRENT_STATE)
    begin
       case(CURRENT_STATE)
          Idle:	
@@ -187,8 +187,8 @@ module CacheControl(input Strobe,
          
          WriteData:	
             begin
-               OutputLogic = 00110101;
-               NEXT_STATE <= 00110101;
+               OutputLogic = 8'b00110101;
+               NEXT_STATE <= Idle;
             end
       
          default: 
