@@ -1,3 +1,7 @@
+/*
+   Slayter Teal and Daniel Albrecht
+   Spring 2021
+*/
 module CacheControl(input Strobe,
                     input DRW,
                     input M,
@@ -74,6 +78,14 @@ module CacheControl(input Strobe,
       00110101
    */
 
+   /*
+      Below is the FSM that controls the various states of the cache.
+      The OutputLogic is used to determine how the data write or data
+      read operations are handled. 
+
+      The control signals are sent from the control unit within the ARM and
+      is based on the previous state of the FSM.
+   */
    always @(CtrSig or Strobe or M or V or DRW or CURRENT_STATE)
    begin
       case(CURRENT_STATE)

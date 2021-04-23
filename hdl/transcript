@@ -20,7 +20,7 @@
 # ./blank_cache_files/cache_tag.dat
 # ./blank_cache_files/cache_data.dat
 # Model Technology ModelSim SE-64 vlog 10.7f Compiler 2020.03 Mar 24 2020
-# Start time: 14:36:34 on Apr 16,2021
+# Start time: 13:35:47 on Apr 23,2021
 # vlog -reportprogress 300 wait_state.v control.sv cache.sv comparator.v cacheram.v imem.v dmem_wait.v arm_pipelined.sv top.sv tb.sv 
 # -- Compiling module wait_state
 # -- Compiling module CacheControl
@@ -56,5 +56,5 @@
 # 	flopenr
 # 	flopr
 # 	testbench
-# End time: 14:36:34 on Apr 16,2021, Elapsed time: 0:00:00
+# End time: 13:35:48 on Apr 23,2021, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0
